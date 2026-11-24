@@ -629,3 +629,291 @@ code { background: var(--superficie-2); padding: 2px 8px; border-radius: 6px; fo
 [data-tema="escuro"] .pedido,
 [data-tema="escuro"] .cupom,
 [data-tema="escuro"] .sanfona { border-color: var(--borda); }
+
+
+
+/* =====================================================================
+   16. ANIMAÇÕES E MICROINTERAÇÕES
+   Camada exclusivamente visual: não altera conteúdo nem funcionalidades.
+   ===================================================================== */
+
+:root {
+  --movimento-suave: cubic-bezier(.22, 1, .36, 1);
+  --duracao-rapida: 180ms;
+  --duracao-media: 360ms;
+}
+
+/* Entrada das telas ao navegar pelo site */
+@keyframes telaEntrar {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tela:not([hidden]) {
+  animation: telaEntrar 420ms var(--movimento-suave) both;
+}
+
+/* Entrada em sequência dos blocos principais da página inicial */
+@keyframes blocoEntrar {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tela--inicio:not([hidden]) > .hero,
+.tela--inicio:not([hidden]) > .banner,
+.tela--inicio:not([hidden]) > .busca,
+.tela--inicio:not([hidden]) > section {
+  animation: blocoEntrar 520ms var(--movimento-suave) both;
+}
+
+.tela--inicio:not([hidden]) > .hero { animation-delay: 40ms; }
+.tela--inicio:not([hidden]) > .banner { animation-delay: 100ms; }
+.tela--inicio:not([hidden]) > .busca { animation-delay: 150ms; }
+.tela--inicio:not([hidden]) > section:nth-of-type(1) { animation-delay: 210ms; }
+.tela--inicio:not([hidden]) > section:nth-of-type(2) { animation-delay: 280ms; }
+
+.hero__cartao { animation: blocoEntrar 650ms var(--movimento-suave) 100ms both; }
+.hero__logo { animation: logoEntrar 700ms var(--movimento-suave) 160ms both; }
+
+@keyframes logoEntrar {
+  from { opacity: 0; transform: translateY(10px) scale(.86); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Um brilho muito discreto na capa, sem depender de imagens */
+.hero__capa {
+  background-size: 160% 160%;
+  animation: capaRespirar 12s ease-in-out infinite alternate;
+}
+
+@keyframes capaRespirar {
+  from { background-position: 0% 50%; }
+  to   { background-position: 100% 50%; }
+}
+
+/* Banner e faixa de cashback ganham uma entrada suave */
+.banner,
+.cashback-faixa {
+  transition: transform var(--duracao-media) var(--movimento-suave),
+              box-shadow var(--duracao-media) var(--movimento-suave);
+}
+.banner:hover,
+.cashback-faixa:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 24px rgba(67, 31, 12, .16);
+}
+
+/* Categorias e cards de destaque */
+.quadro,
+.card-destaque {
+  transition: transform 260ms var(--movimento-suave),
+              box-shadow 260ms var(--movimento-suave);
+}
+.quadro:hover,
+.card-destaque:hover {
+  transform: translateY(-4px);
+}
+.quadro:active,
+.card-destaque:active {
+  transform: scale(.985);
+}
+
+.quadro__foto,
+.card-destaque__foto,
+.foto img {
+  transition: transform 550ms var(--movimento-suave), filter 350ms ease;
+}
+.quadro:hover .quadro__foto,
+.card-destaque:hover .card-destaque__foto,
+.foto:has(img):hover img {
+  transform: scale(1.045);
+}
+
+/* Lista de produtos: pequenos intervalos dão ritmo à entrada */
+@keyframes itemEntrar {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.lista-produtos > .produto {
+  animation: itemEntrar 420ms var(--movimento-suave) both;
+}
+.lista-produtos > .produto:nth-child(1) { animation-delay: 30ms; }
+.lista-produtos > .produto:nth-child(2) { animation-delay: 65ms; }
+.lista-produtos > .produto:nth-child(3) { animation-delay: 100ms; }
+.lista-produtos > .produto:nth-child(4) { animation-delay: 135ms; }
+.lista-produtos > .produto:nth-child(5) { animation-delay: 170ms; }
+.lista-produtos > .produto:nth-child(n+6) { animation-delay: 205ms; }
+
+.linha-produto {
+  transition: background-color 220ms ease, padding-left 220ms var(--movimento-suave);
+}
+.linha-produto:hover { padding-left: calc(var(--espaco) + 4px); }
+
+/* Cartões gerados pelo JavaScript também recebem entrada */
+.card-destaque,
+.sacola-item,
+.pedido,
+.cupom,
+.opcao,
+.escolha {
+  animation: itemEntrar 380ms var(--movimento-suave) both;
+}
+
+/* Botões, ícones e controles: resposta tátil visual */
+.btn,
+.icone-btn,
+.contador__btn,
+.card-destaque__mais,
+.menu__item,
+.segmentado__btn,
+.abas__btn,
+.opcao--clicavel,
+.escolha {
+  transition:
+    transform 180ms var(--movimento-suave),
+    background-color 220ms ease,
+    color 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+
+.btn:hover:not([disabled]),
+.icone-btn:hover,
+.card-destaque__mais:hover,
+.contador__btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.btn:active:not([disabled]),
+.icone-btn:active,
+.card-destaque__mais:active,
+.contador__btn:active:not(:disabled),
+.menu__item:active,
+.segmentado__btn:active,
+.abas__btn:active {
+  transform: scale(.96);
+}
+
+.btn--primario:hover:not([disabled]),
+.card-destaque__mais:hover {
+  box-shadow: 0 7px 18px rgba(166, 35, 0, .24);
+}
+
+/* Menu inferior: ícone e texto respondem à seleção */
+.menu__item .icone {
+  transition: transform 240ms var(--movimento-suave);
+}
+.menu__item.is-ativo .icone {
+  transform: translateY(-2px) scale(1.08);
+}
+.menu__badge {
+  animation: badgePulsar 2.4s ease-in-out infinite;
+}
+@keyframes badgePulsar {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.08); }
+}
+
+/* Botão flutuante: entrada e mudança de estado */
+.barra-sacola:not([hidden]) {
+  animation: barraEntrar 420ms var(--movimento-suave) both;
+}
+@keyframes barraEntrar {
+  from { opacity: 0; transform: translateY(18px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.barra-sacola__qtd {
+  transition: transform 220ms var(--movimento-suave), background-color 220ms ease;
+}
+.barra-sacola:hover .barra-sacola__qtd { transform: scale(1.08); }
+
+/* Campos de busca e formulários */
+.busca,
+input,
+textarea,
+.escolha {
+  transition: border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
+}
+.busca:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primaria) 16%, transparent), var(--sombra);
+}
+input:focus,
+textarea:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primaria) 13%, transparent);
+}
+
+/* Opções, seletores e abas */
+.opcao--clicavel:hover,
+.escolha:hover {
+  background: color-mix(in srgb, var(--primaria) 5%, var(--superficie));
+}
+.radio::after {
+  transition: transform 180ms var(--movimento-suave), opacity 180ms ease;
+}
+.radio[aria-checked="true"]::after {
+  animation: radioSelecionado 220ms var(--movimento-suave);
+}
+@keyframes radioSelecionado {
+  from { transform: scale(.35); opacity: .4; }
+  to   { transform: scale(1); opacity: 1; }
+}
+.segmentado__btn.is-ativo,
+.abas__btn.is-ativo {
+  transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease;
+}
+
+/* Abre/fecha de cupons, pedidos e sanfonas */
+.cupom__corpo,
+.pedido__detalhe {
+  animation: blocoEntrar 260ms var(--movimento-suave) both;
+}
+.cupom summary,
+.pedido summary,
+.sanfona summary {
+  transition: color 180ms ease;
+}
+.cupom summary:hover,
+.pedido summary:hover,
+.sanfona summary:hover {
+  color: var(--primaria);
+}
+
+/* Avisos rápidos */
+.aviso:not([hidden]) {
+  animation: avisoEntrar 260ms var(--movimento-suave) both;
+}
+@keyframes avisoEntrar {
+  from { opacity: 0; transform: translate(-50%, 12px) scale(.97); }
+  to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+/* Tela de confirmação */
+.sucesso__icone {
+  animation: sucessoEntrar 550ms var(--movimento-suave) both;
+}
+@keyframes sucessoEntrar {
+  0%   { opacity: 0; transform: scale(.72) rotate(-10deg); }
+  65%  { opacity: 1; transform: scale(1.08) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+/* Topo e barra fixa acompanham a interface sem chamar atenção */
+.topo {
+  transition: background-color 220ms ease, border-color 220ms ease;
+}
+.barra-fixa {
+  transition: box-shadow 220ms ease, background-color 220ms ease;
+}
+
+/* Acessibilidade: respeita quem prefere movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
