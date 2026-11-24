@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-tema="claro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#E4572E">
+
+  <!-- Nome que aparece na aba do navegador -->
+  <title>Sua Lanchonete</title>
+
+  <!-- Quer outra fonte? Descomente a linha abaixo e troque --fonte no style.css
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap">
+  -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<!--
+  =====================================================================
+  COMO O SITE É DIVIDIDO
+  =====================================================================
+  index.html (este arquivo) ... TUDO que o cliente lê: nome, textos, produtos,
+                                preços, horários, cupons, endereço, WhatsApp.
+  style.css ................... só o visual: cores, fonte, tamanhos.
+  app.js ...................... só o funcionamento: sacola, cupom, WhatsApp.
+
+  QUER MUDAR ALGO? PROCURE AQUI (Ctrl+F) PELO TÍTULO EM MAIÚSCULAS:
+    DADOS DA LOJA ......... nome, slogan, taxa, tempo, pedido mínimo (tela inicial)
+    BANNER ................ faixa de promoção da tela inicial
+    CATEGORIAS ............ os quadros do cardápio
+    PRODUTOS · (categoria)  nome, descrição, preço, foto, "Esgotado"
+    OPÇÕES DOS PRODUTOS ... adicionais, escolha de bebida, molhos
+    CUPONS ................ cupons de desconto e cashback
+    SOBRE A LOJA .......... horários, endereço, WhatsApp que recebe os pedidos
+    PAGAMENTO ............. formas de pagamento (tela finalizar)
+
+  REGRAS PARA EDITAR
+  - Troque o texto à vontade. O JS lê preços, horários e nomes direto daqui.
+  - Preço: escreva como quiser, o JS pega o número. "R$ 16,00", "16,00" ou "16".
+  - Não apague nem renomeie  id="..."  e  data-...="..."  : o JS usa para achar as coisas.
+    (Os que o JS lê estão listados no comecinho do app.js.)
+  - Esgotado: coloque  <span class="tag tag--esgotado">Esgotado</span>  no produto
+    ou na opção. Para liberar de novo, apague essa linha.
+  - Foto: dentro do <div class="foto"> escreva  <img src="img/arquivo.jpg" alt="descrição">
+    Sem foto, deixe o <div class="foto"></div> vazio (aparece um ícone).
+  - Novo produto: copie um <li class="produto"> inteiro, cole na categoria certa
+    e troque o data-id (único, sem espaços/acentos) e os textos.
+  - Depois de salvar, atualize a página (F5; se não mudar, Ctrl+F5).
+  =====================================================================
+-->
+<body>
+
+  <!-- ÍCONES (desenhos reutilizados). Uso: <svg class="icone"><use href="#i-nome"/></svg> -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-casa" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></symbol>
+    <symbol id="i-promo" viewBox="0 0 24 24"><path d="M20 12l-8 8-9-9V3h8l9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
+    <symbol id="i-sacola" viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></symbol>
+    <symbol id="i-pedidos" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3z"/><path d="M9 8h6M9 12h6"/></symbol>
+    <symbol id="i-voltar" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-busca" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></symbol>
+    <symbol id="i-compartilhar" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></symbol>
+    <symbol id="i-lua" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z"/></symbol>
+    <symbol id="i-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-menos" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+    <symbol id="i-lixo" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+    <symbol id="i-local" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-ok" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+  </svg>
+
+
+  <!-- =====================================================================
+       PARTES FIXAS (aparecem em todas as telas)
+       ===================================================================== -->
+
+  <!-- Topo das telas internas. O título vem do data-titulo de cada tela. -->
+  <header id="topo" class="topo" hidden>
+    <button type="button" id="topo-voltar" class="icone-btn" aria-label="Voltar">
+      <svg class="icone"><use href="#i-voltar"/></svg>
+    </button>
+    <h1 id="topo-titulo" class="topo__titulo"></h1>
+    <div class="topo__acoes">
+      <button type="button" id="topo-compartilhar" class="icone-btn" aria-label="Compartilhar" hidden>
+        <svg class="icone"><use href="#i-compartilhar"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Barra flutuante "Ver sacola" (aparece quando há itens) -->
+  <a id="barra-sacola" class="barra-sacola" href="#/sacola" hidden>
+    <span class="barra-sacola__qtd" id="barra-sacola-qtd">0</span>
+    <span class="barra-sacola__texto">Ver sacola</span>
+    <strong id="barra-sacola-total">R$ 0,00</strong>
+  </a>
+
+  <!-- Menu de baixo -->
+  <nav class="menu" aria-label="Menu principal">
+    <a class="menu__item" href="#/" data-rota="inicio">
+      <svg class="icone"><use href="#i-casa"/></svg><span>Início</span>
+    </a>
+    <a class="menu__item" href="#/promos" data-rota="promos">
+      <svg class="icone"><use href="#i-promo"/></svg><span>Promos</span>
+      <i class="menu__badge" id="badge-promos" hidden></i>
+    </a>
+    <a class="menu__item" href="#/sacola" data-rota="sacola">
+      <svg class="icone"><use href="#i-sacola"/></svg><span>Sacola</span>
+      <i class="menu__badge" id="badge-sacola" hidden></i>
+    </a>
+    <a class="menu__item" href="#/pedidos" data-rota="pedidos">
+      <svg class="icone"><use href="#i-pedidos"/></svg><span>Pedidos</span>
+    </a>
+  </nav>
+
+  <!-- Aviso rápido (ex.: "Item adicionado") -->
+  <div id="aviso" class="aviso" role="status" hidden></div>
+
+  <noscript>Ative o JavaScript para fazer pedidos.</noscript>
+
+
+  <!-- =====================================================================
+       TELAS
+       Cada tela é uma <section class="tela" data-tela="nome">. O site mostra
+       uma de cada vez, conforme o endereço (#/sacola, #/promos...).
+       data-titulo = título no topo  |  data-pai = para onde o "voltar" vai
+       ===================================================================== -->
+  <main id="app" class="app">
+
+
+    <!-- ===== TELA INICIAL ===== -->
+    <section class="tela tela--inicio" data-tela="inicio" hidden>
+
+      <!-- ===== DADOS DA LOJA ===== -->
+      <div class="hero">
+        <!-- Capa: para usar uma foto, escreva <img src="img/capa.jpg" alt=""> dentro do div. Vazio = degradê -->
+        <div class="hero__capa foto"></div>
+
+        <div class="hero__botoes">
+          <button type="button" id="btn-tema" class="icone-btn icone-btn--vidro" aria-label="Alternar tema claro/escuro">
+            <svg class="icone"><use href="#i-lua"/></svg>
+          </button>
+          <button type="button" id="btn-compartilhar" class="icone-btn icone-btn--vidro" aria-label="Compartilhar">
+            <svg class="icone"><use href="#i-compartilhar"/></svg>
+          </button>
+        </div>
+
+        <div class="hero__cartao cartao">
+          <!-- Logo: <img src="img/logo.png" alt="Logo"> dentro do div -->
+          <div class="hero__logo foto"></div>
+          <h1 class="hero__nome" id="loja-nome">Sua Lanchonete</h1>
+          <p class="hero__slogan">Lanches feitos na hora</p>
+
+          <!-- "Aberta agora / Loja fechada": o texto é calculado pelo site a partir dos horários -->
+          <p class="status"><i class="status__ponto"></i><span></span></p>
+
+          <!-- Entrega: escreva "Grátis" para entrega grátis. O site usa estes valores nos cálculos. -->
+          <ul class="infos">
+            <li><span class="infos__rotulo">Entrega</span><strong id="loja-taxa">R$ 6,00</strong></li>
+            <li><span class="infos__rotulo">Tempo</span><strong id="loja-tempo">40–60 min</strong></li>
+            <li><span class="infos__rotulo">Mínimo</span><strong id="loja-minimo">R$ 15,00</strong></li>
+          </ul>
+          <a class="link" href="#/loja">Mais informações da loja</a>
+        </div>
+      </div>
+
+      <!-- ===== BANNER =====
+           Apague este bloco inteiro para esconder o banner.
+           data-cupom = código do cupom (veja CUPONS) que o botão aplica. -->
+      <div class="banner">
+        <div class="banner__texto">
+          <small>Promoção da semana</small>
+          <strong>R$ 10 de desconto</strong>
+          <span>No primeiro pedido a partir de R$ 40</span>
+        </div>
+        <button type="button" class="btn btn--claro" data-cupom="BEMVINDO10">Usar cupom</button>
+      </div>
+
+      <!-- Busca -->
+      <form class="busca" id="form-busca" role="search">
+        <svg class="icone"><use href="#i-busca"/></svg>
+        <input type="search" id="busca-campo" placeholder="Buscar no cardápio" aria-label="Buscar no cardápio" autocomplete="off">
+      </form>
+
+      <!-- ===== DESTAQUES =====
+           data-produtos = ids dos produtos (veja PRODUTOS), separados por espaço.
+           Nome, preço e foto vêm do próprio produto. Apague a seção para esconder. -->
+      <section>
+        <h2 class="titulo-secao">Os mais pedidos</h2>
+        <div class="carrossel" id="destaques" data-produtos="x-burguer combo-x-burguer hot-dog-completo batata-g shake-chocolate"></div>
+      </section>
+
+      <!-- ===== CATEGORIAS =====
+           O nome do quadro é o título da tela da categoria.
+           O id depois de #/categoria/ tem que ser igual ao data-id da tela (em PRODUTOS). -->
+      <section>
+        <h2 class="titulo-secao">Cardápio</h2>
+        <div class="grade-categorias">
+        <a class="quadro" href="#/categoria/burgers">
+          <div class="foto quadro__foto"></div>
+          <span class="quadro__nome">Hambúrgueres</span>
+        </a>
+        <a class="quadro" href="#/categoria/combos">
+          <div class="foto quadro__foto"></div>
+          <span class="quadro__nome">Combos</span>
+        </a>
+        <a class="quadro" href="#/categoria/hotdogs">
+          <div class="foto quadro__foto"></div>
+          <span class="quadro__nome">Hot dogs</span>
+        </a>
+        <a class="quadro" href="#/categoria/porcoes">
+          <div class="foto quadro__foto"></div>
+          <span class="quadro__nome">Batatas e porções</span>
+        </a>
+        <a class="quadro" href="#/categoria/shakes">
+          <div class="foto quadro__foto"></div>
+          <span class="quadro__nome">Milk shakes</span>
+        </a>
+        <a class="quadro" href="#/categoria/bebidas">
+          <div class="foto quadro__foto"></div>
+          <span class="quadro__nome">Bebidas</span>
+        </a>
+        <a class="quadro" href="#/categoria/sobremesas">
+          <div class="foto quadro__foto"></div>
+          <span class="quadro__nome">Sobremesas</span>
+        </a>
+        </div>
+      </section>
+
+    </section>
+
+
+    <!-- ===== PRODUTOS =====
+         Uma tela por categoria. Cada <li class="produto"> é um produto:
+           data-id ....... nome interno único (sem espaços/acentos)
+           data-grupos ... grupos de OPÇÕES DOS PRODUTOS que ele usa (separe por espaço; vazio = nenhum) -->
+
+  <!-- ===== PRODUTOS · Hambúrgueres ===== -->
+  <section class="tela tela--lista" data-tela="categoria" data-id="burgers" data-pai="/" hidden>
+    <ul class="lista-produtos">
+        <!-- FOTO: para colocar uma foto, escreva dentro do <div class="foto"> abaixo:
+             <img src="img/hamburguer.jpg" alt="Hambúrguer">   (deixe o div vazio se não tiver foto) -->
+        <li class="produto" data-id="hamburguer" data-grupos="adicionais">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Hambúrguer</h3>
+              <p class="suave linha-produto__descricao">Pão, carne, alface, tomate e maionese.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 12,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+        <li class="produto" data-id="x-burguer" data-grupos="adicionais">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">X-Burguer</h3>
+              <p class="suave linha-produto__descricao">Pão, carne, queijo, presunto, alface, tomate e maionese.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 16,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+        <li class="produto" data-id="x-bacon" data-grupos="adicionais">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">X-Bacon</h3>
+              <p class="suave linha-produto__descricao">Pão, carne, queijo, bacon crocante, alface e tomate.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 20,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+        <li class="produto" data-id="duplo-cheddar" data-grupos="adicionais">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Duplo Cheddar</h3>
+              <p class="suave linha-produto__descricao">Pão, duas carnes, cheddar cremoso e cebola caramelizada.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 27,90</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+        <li class="produto" data-id="frango-crocante" data-grupos="adicionais">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Frango Crocante</h3>
+              <p class="suave linha-produto__descricao">Pão, filé de frango empanado, queijo, alface e maionese.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 19,00</strong>
+              <span class="tag tag--esgotado">Esgotado</span>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+    </ul>
+  </section>
+
+  <!-- ===== PRODUTOS · Combos ===== -->
+  <section class="tela tela--lista" data-tela="categoria" data-id="combos" data-pai="/" hidden>
+    <ul class="lista-produtos">
+        <li class="produto" data-id="combo-x-burguer" data-grupos="bebidaCombo adicionais">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Combo X-Burguer</h3>
+              <p class="suave linha-produto__descricao">X-Burguer + batata frita pequena + bebida.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 32,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+        <li class="produto" data-id="combo-duplo" data-grupos="bebidaCombo">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Combo Duplo</h3>
+              <p class="suave linha-produto__descricao">Dois X-Burguer + batata frita grande + duas bebidas.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 59,90</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+    </ul>
+  </section>
+
+  <!-- ===== PRODUTOS · Hot dogs ===== -->
+  <section class="tela tela--lista" data-tela="categoria" data-id="hotdogs" data-pai="/" hidden>
+    <ul class="lista-produtos">
+        <li class="produto" data-id="hot-dog-simples" data-grupos="adicionais">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Hot Dog Simples</h3>
+              <p class="suave linha-produto__descricao">Pão, salsicha, molho, milho, batata palha e ketchup.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 11,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+        <li class="produto" data-id="hot-dog-completo" data-grupos="adicionais">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Hot Dog Completo</h3>
+              <p class="suave linha-produto__descricao">Duas salsichas, purê, queijo, bacon, milho e batata palha.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 17,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+    </ul>
+  </section>
+
+  <!-- ===== PRODUTOS · Batatas e porções ===== -->
+  <section class="tela tela--lista" data-tela="categoria" data-id="porcoes" data-pai="/" hidden>
+    <ul class="lista-produtos">
+        <li class="produto" data-id="batata-p" data-grupos="molhos">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Batata Frita P</h3>
+              <p class="suave linha-produto__descricao">Porção individual, crocante e sequinha.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 10,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+        <li class="produto" data-id="batata-g" data-grupos="molhos">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Batata Frita G</h3>
+              <p class="suave linha-produto__descricao">Porção para dividir, com cheddar e bacon.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 24,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+    </ul>
+  </section>
+
+  <!-- ===== PRODUTOS · Milk shakes ===== -->
+  <section class="tela tela--lista" data-tela="categoria" data-id="shakes" data-pai="/" hidden>
+    <ul class="lista-produtos">
+        <li class="produto" data-id="shake-chocolate" data-grupos="">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Milk Shake de Chocolate</h3>
+              <p class="suave linha-produto__descricao">400 ml, com calda e chantilly.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 16,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+        <li class="produto" data-id="shake-morango" data-grupos="">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Milk Shake de Morango</h3>
+              <p class="suave linha-produto__descricao">400 ml, com calda de morango e chantilly.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 16,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+    </ul>
+  </section>
+
+  <!-- ===== PRODUTOS · Bebidas ===== -->
+  <section class="tela tela--lista" data-tela="categoria" data-id="bebidas" data-pai="/" hidden>
+    <ul class="lista-produtos">
+        <li class="produto" data-id="refri-lata" data-grupos="">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Refrigerante lata</h3>
+              <p class="suave linha-produto__descricao">350 ml. Consulte os sabores no recado do pedido.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 6,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+        <li class="produto" data-id="suco-natural" data-grupos="">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Suco natural</h3>
+              <p class="suave linha-produto__descricao">300 ml. Laranja ou limão.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 8,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+        <li class="produto" data-id="agua" data-grupos="">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Água mineral</h3>
+              <p class="suave linha-produto__descricao">500 ml, sem gás.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 3,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+    </ul>
+  </section>
+
+  <!-- ===== PRODUTOS · Sobremesas ===== -->
+  <section class="tela tela--lista" data-tela="categoria" data-id="sobremesas" data-pai="/" hidden>
+    <ul class="lista-produtos">
+        <li class="produto" data-id="brigadeiro" data-grupos="">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Brigadeiro</h3>
+              <p class="suave linha-produto__descricao">Unidade de brigadeiro gourmet.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 4,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+        <li class="produto" data-id="pudim" data-grupos="">
+          <a class="linha-produto">
+            <div class="linha-produto__texto">
+              <h3 class="linha-produto__nome">Pudim</h3>
+              <p class="suave linha-produto__descricao">Fatia de pudim de leite condensado.</p>
+              <div class="linha-produto__rodape">
+                <strong class="linha-produto__preco">R$ 9,00</strong>
+              </div>
+            </div>
+            <div class="foto foto--quadrada"></div>
+          </a>
+        </li>
+    </ul>
+  </section>
+
+
+    <!-- ===== RESULTADO DA BUSCA (o site preenche com os produtos encontrados) ===== -->
+    <section class="tela tela--lista" data-tela="busca" data-pai="/" hidden>
+      <ul class="lista-produtos" id="busca-resultados"></ul>
+      <p class="vazio" id="busca-vazio" hidden>Nenhum item encontrado por aqui.</p>
+    </section>
+
+
+    <!-- ===== TELA DO PRODUTO (o site preenche nome, preço e foto do produto escolhido) ===== -->
+    <section class="tela tela--produto" data-tela="produto" data-titulo="Detalhes do produto" data-pai="/" hidden>
+
+      <div class="produto__topo">
+        <div class="produto__foto foto" id="p-foto"></div>
+        <div class="produto__info">
+          <h2 class="produto__nome" id="p-nome"></h2>
+          <p class="produto__preco" id="p-preco"></p>
+          <span class="tag tag--cashback">Você ganha cashback neste item</span>
+          <p class="suave" id="p-descricao"></p>
+        </div>
+      </div>
+
+      <!-- Grupos de opções do produto (copiados de OPÇÕES DOS PRODUTOS) -->
+      <div id="p-grupos"></div>
+
+      <div class="bloco">
+        <label class="bloco__titulo" for="p-obs">Observações</label>
+        <textarea id="p-obs" rows="3" maxlength="200" placeholder="Ex.: tirar cebola, sem maionese..."></textarea>
+      </div>
+
+      <!-- Barra fixa de baixo: loja aberta -->
+      <div class="barra-fixa" id="p-barra-aberta">
+        <div class="contador">
+          <button type="button" class="contador__btn" id="p-menos" aria-label="Diminuir"><svg class="icone"><use href="#i-menos"/></svg></button>
+          <span class="contador__qtd" id="p-qtd">1</span>
+          <button type="button" class="contador__btn" id="p-mais" aria-label="Aumentar"><svg class="icone"><use href="#i-mais"/></svg></button>
+        </div>
+        <button type="button" class="btn btn--primario btn--bloco btn--duplo" id="p-adicionar">
+          <span>Adicionar</span><strong id="p-total"></strong>
+        </button>
+      </div>
+
+      <!-- Barra fixa de baixo: loja fechada ou produto esgotado -->
+      <div class="barra-fixa barra-fixa--fechada" id="p-barra-fechada" hidden>
+        <span id="p-motivo"></span>
+      </div>
+
+    </section>
+
+
+    <!-- ===== SACOLA ===== -->
+    <section class="tela tela--sacola" data-tela="sacola" data-titulo="Sua sacola" data-pai="/" hidden>
+
+      <!-- Sacola vazia -->
+      <div class="vazio vazio--grande" id="sacola-vazia" hidden>
+        <svg class="icone icone--grande"><use href="#i-sacola"/></svg>
+        <p>Sua sacola está vazia.</p>
+        <a class="btn btn--primario" href="#/">Ver cardápio</a>
+      </div>
+
+      <!-- Sacola com itens -->
+      <div id="sacola-cheia" hidden>
+        <ul class="sacola-itens" id="sacola-itens"></ul>
+
+        <div class="bloco">
+          <h3 class="bloco__titulo">Como você quer receber?</h3>
+          <div class="segmentado">
+            <button type="button" class="segmentado__btn" data-tipo="entrega">Entrega</button>
+            <button type="button" class="segmentado__btn" data-tipo="retirada">Retirada</button>
+          </div>
+        </div>
+
+        <div class="bloco">
+          <h3 class="bloco__titulo">Cupom de desconto</h3>
+          <form class="linha-form" id="form-cupom">
+            <input type="text" id="cupom-campo" placeholder="Digite o código" autocapitalize="characters" autocomplete="off" aria-label="Código do cupom">
+            <button type="submit" class="btn btn--contorno">Aplicar</button>
+          </form>
+          <p class="msg" id="cupom-msg" hidden></p>
+          <div class="links-linha">
+            <button type="button" class="link" id="cupom-remover" hidden>Remover cupom</button>
+            <a class="link" href="#/promos">Ver cupons disponíveis</a>
+          </div>
+        </div>
+
+        <!-- Só aparece se houver cashback e saldo -->
+        <label class="bloco bloco--check" id="cashback-bloco" hidden>
+          <input type="checkbox" id="cashback-usar">
+          <span>Usar meu cashback <strong id="cashback-saldo-sacola"></strong></span>
+        </label>
+
+        <div class="bloco">
+          <dl class="resumo">
+            <div class="resumo__linha" data-linha="subtotal"><dt>Subtotal</dt><dd></dd></div>
+            <div class="resumo__linha resumo__linha--bom" data-linha="desconto"><dt>Desconto</dt><dd></dd></div>
+            <div class="resumo__linha" data-linha="entrega"><dt>Entrega</dt><dd></dd></div>
+            <div class="resumo__linha resumo__linha--bom" data-linha="cashback"><dt>Cashback usado</dt><dd></dd></div>
+            <div class="resumo__linha resumo__linha--total" data-linha="total"><dt>Total</dt><dd></dd></div>
+          </dl>
+        </div>
+
+        <p class="msg msg--erro" id="sacola-aviso" hidden></p>
+
+        <button type="button" class="btn btn--primario btn--bloco" id="sacola-continuar">Continuar</button>
+        <button type="button" class="link link--perigo" id="sacola-esvaziar">Esvaziar sacola</button>
+      </div>
+
+    </section>
+
+
+    <!-- ===== IDENTIFICAÇÃO (nome + WhatsApp) ===== -->
+    <section class="tela tela--form" data-tela="identificar" data-titulo="Identifique-se" data-pai="/sacola" hidden>
+      <form class="form" id="form-identificar" novalidate>
+        <p class="selo-seguro">Seus dados ficam salvos só neste aparelho e vão apenas no pedido enviado para a loja.</p>
+
+        <label class="campo">
+          <span>Seu número de WhatsApp</span>
+          <input type="tel" inputmode="numeric" id="id-whats" placeholder="(00) 00000-0000" maxlength="16" autocomplete="tel">
+        </label>
+
+        <label class="campo">
+          <span>Seu nome</span>
+          <input type="text" id="id-nome" placeholder="Nome e sobrenome" autocomplete="name">
+        </label>
+
+        <button type="submit" class="btn btn--primario btn--bloco" id="id-avancar" disabled>Avançar</button>
+      </form>
+    </section>
+
+
+    <!-- ===== FINALIZAR PEDIDO ===== -->
+    <section class="tela tela--form" data-tela="finalizar" data-titulo="Finalizar pedido" data-pai="/sacola" hidden>
+      <form class="form" id="form-finalizar" novalidate>
+
+        <div class="bloco">
+          <h3 class="bloco__titulo">Seus dados</h3>
+          <p><strong id="fin-nome"></strong><br><span class="suave" id="fin-whats"></span></p>
+          <a class="link" href="#/identificar">Alterar</a>
+        </div>
+
+        <!-- Só aparece na entrega -->
+        <div class="bloco" id="fin-endereco" hidden>
+          <h3 class="bloco__titulo">Endereço de entrega</h3>
+          <label class="campo"><span>Rua</span><input type="text" id="fin-rua" autocomplete="address-line1"></label>
+          <div class="campo-duplo">
+            <label class="campo"><span>Número</span><input type="text" id="fin-numero"></label>
+            <label class="campo"><span>Bairro</span><input type="text" id="fin-bairro"></label>
+          </div>
+          <label class="campo"><span>Complemento (opcional)</span><input type="text" id="fin-complemento"></label>
+          <label class="campo"><span>Ponto de referência (opcional)</span><input type="text" id="fin-referencia"></label>
+        </div>
+
+        <!-- Só aparece na retirada (o endereço vem de SOBRE A LOJA) -->
+        <div class="bloco" id="fin-retirada" hidden>
+          <h3 class="bloco__titulo">Retirada na loja</h3>
+          <p class="suave" id="fin-endereco-loja"></p>
+        </div>
+
+        <!-- ===== PAGAMENTO =====
+             O nome em <strong> é o que vai na mensagem do pedido.
+             data-troco = pergunta "troco para quanto?" quando essa forma é escolhida. -->
+        <div class="bloco">
+          <h3 class="bloco__titulo">Forma de pagamento</h3>
+          <div class="escolhas">
+            <label class="escolha">
+              <input type="radio" name="pagamento">
+              <span class="escolha__corpo">
+                <strong>Pix</strong>
+                <small class="suave">Chave Pix: sua-chave-aqui (envie o comprovante no WhatsApp)</small>
+              </span>
+            </label>
+            <label class="escolha">
+              <input type="radio" name="pagamento" data-troco>
+              <span class="escolha__corpo">
+                <strong>Dinheiro</strong>
+                <small class="suave">Pague na entrega ou retirada</small>
+              </span>
+            </label>
+            <label class="escolha">
+              <input type="radio" name="pagamento">
+              <span class="escolha__corpo">
+                <strong>Cartão de crédito ou débito</strong>
+                <small class="suave">Pague na entrega ou retirada (maquininha)</small>
+              </span>
+            </label>
+          </div>
+          <label class="campo" id="fin-troco-bloco" hidden>
+            <span>Troco para quanto? (deixe vazio se não precisa)</span>
+            <input type="text" inputmode="decimal" id="fin-troco" placeholder="Ex.: 50">
+          </label>
+        </div>
+
+        <div class="bloco">
+          <label class="bloco__titulo" for="fin-recado">Recado para a loja (opcional)</label>
+          <textarea id="fin-recado" rows="2" maxlength="200"></textarea>
+        </div>
+
+        <div class="bloco">
+          <dl class="resumo">
+            <div class="resumo__linha" data-linha="subtotal"><dt>Subtotal</dt><dd></dd></div>
+            <div class="resumo__linha resumo__linha--bom" data-linha="desconto"><dt>Desconto</dt><dd></dd></div>
+            <div class="resumo__linha" data-linha="entrega"><dt>Entrega</dt><dd></dd></div>
+            <div class="resumo__linha resumo__linha--bom" data-linha="cashback"><dt>Cashback usado</dt><dd></dd></div>
+            <div class="resumo__linha resumo__linha--total" data-linha="total"><dt>Total</dt><dd></dd></div>
+          </dl>
+        </div>
+
+        <p class="msg msg--erro" id="fin-erro" hidden></p>
+        <button type="submit" class="btn btn--primario btn--bloco btn--duplo">
+          <span>Enviar pedido pelo WhatsApp</span><strong id="fin-total"></strong>
+        </button>
+      </form>
+    </section>
+
+
+    <!-- ===== PEDIDO ENVIADO ===== -->
+    <section class="tela tela--sucesso" data-tela="sucesso" data-titulo="Pedido enviado" data-pai="/" hidden>
+      <div class="sucesso__icone"><svg class="icone icone--grande"><use href="#i-ok"/></svg></div>
+      <h2>Pedido <span id="suc-numero"></span> criado!</h2>
+      <p class="suave">Falta só um passo: toque no botão abaixo e envie a mensagem no WhatsApp da loja para confirmar o pedido.</p>
+      <p class="tag tag--cashback" id="suc-cashback" hidden></p>
+
+      <a class="btn btn--primario btn--bloco" id="suc-whatsapp" target="_blank" rel="noopener">Abrir WhatsApp da loja</a>
+      <a class="btn btn--contorno btn--bloco" href="#/pedidos">Ver meus pedidos</a>
+      <a class="link" href="#/">Voltar ao cardápio</a>
+    </section>
+
+
+    <!-- ===== MEUS PEDIDOS ===== -->
+    <section class="tela tela--pedidos" data-tela="pedidos" data-titulo="Meus pedidos" data-pai="/" hidden>
+      <div class="vazio vazio--grande" id="pedidos-vazio" hidden>
+        <svg class="icone icone--grande"><use href="#i-pedidos"/></svg>
+        <p>Você ainda não fez nenhum pedido neste aparelho.</p>
+        <a class="btn btn--primario" href="#/">Ver cardápio</a>
+      </div>
+      <ul class="lista-pedidos" id="pedidos-lista"></ul>
+    </section>
+
+
+    <!-- ===== PROMOÇÕES (cupons + cashback) ===== -->
+    <section class="tela tela--promos" data-tela="promos" data-titulo="Promoções" data-pai="/" hidden>
+
+      <div class="abas" role="tablist">
+        <button type="button" class="abas__btn" role="tab" data-aba="cupons">Cupons</button>
+        <button type="button" class="abas__btn" role="tab" data-aba="cashback">Cashback</button>
+      </div>
+
+      <!-- ===== CUPONS =====
+           Cada <li class="cupom"> é um cupom. O que o site USA no cálculo (data-*):
+             data-codigo ............ o que o cliente digita
+             data-tipo .............. "valor" (R$ nos itens), "percentual" (% nos itens) ou "frete" (R$ na entrega)
+             data-valor ............. 10 = R$ 10 (ou 10%)
+             data-minimo ............ valor mínimo dos itens (0 = sem mínimo)
+             data-primeiro-pedido ... se existir, só vale no primeiro pedido do cliente
+           O que o cliente LÊ (título, regras, código) é texto livre: se mudar um valor
+           em data-*, mude também o texto das regras. -->
+      <div data-painel="cupons">
+        <h2 class="titulo-secao">Cupons de desconto</h2>
+        <p class="suave">Escolha um cupom e aplique na sua sacola.</p>
+        <ul class="lista-cupons">
+        <li class="cupom" data-codigo="BEMVINDO10" data-tipo="valor" data-valor="10" data-minimo="40" data-primeiro-pedido>
+          <details>
+            <summary>
+              <span class="cupom__icone"><svg class="icone"><use href="#i-promo"/></svg></span>
+              <span class="cupom__titulo"><small>Cupom</small><strong>R$ 10 no primeiro pedido</strong></span>
+            </summary>
+            <div class="cupom__corpo">
+              <ul class="regras">
+              <li>R$ 10,00 de desconto nos itens</li>
+              <li>Pedido mínimo de R$ 40,00 em itens</li>
+              <li>Válido só no primeiro pedido</li>
+              </ul>
+              <p class="suave">Código: <code>BEMVINDO10</code></p>
+              <button type="button" class="btn btn--primario btn--bloco" data-cupom="">Aplicar na sacola</button>
+            </div>
+          </details>
+        </li>
+        <li class="cupom" data-codigo="FRETE5" data-tipo="frete" data-valor="5" data-minimo="30">
+          <details>
+            <summary>
+              <span class="cupom__icone"><svg class="icone"><use href="#i-promo"/></svg></span>
+              <span class="cupom__titulo"><small>Cupom</small><strong>R$ 5 de desconto na entrega</strong></span>
+            </summary>
+            <div class="cupom__corpo">
+              <ul class="regras">
+              <li>R$ 5,00 de desconto na entrega</li>
+              <li>Pedido mínimo de R$ 30,00 em itens</li>
+              </ul>
+              <p class="suave">Código: <code>FRETE5</code></p>
+              <button type="button" class="btn btn--primario btn--bloco" data-cupom="">Aplicar na sacola</button>
+            </div>
+          </details>
+        </li>
+        <li class="cupom" data-codigo="LANCHE10" data-tipo="percentual" data-valor="10" data-minimo="30">
+          <details>
+            <summary>
+              <span class="cupom__icone"><svg class="icone"><use href="#i-promo"/></svg></span>
+              <span class="cupom__titulo"><small>Cupom</small><strong>10% de desconto nos itens</strong></span>
+            </summary>
+            <div class="cupom__corpo">
+              <ul class="regras">
+              <li>10% de desconto nos itens</li>
+              <li>Pedido mínimo de R$ 30,00 em itens</li>
+              </ul>
+              <p class="suave">Código: <code>LANCHE10</code></p>
+              <button type="button" class="btn btn--primario btn--bloco" data-cupom="">Aplicar na sacola</button>
+            </div>
+          </details>
+        </li>
+        </ul>
+      </div>
+
+      <!-- ===== CASHBACK =====
+           O número dentro de id="cashback-percentual" é o % que o cliente ganha de volta.
+           Para NÃO ter cashback, apague este bloco inteiro (e o botão "Cashback" acima). -->
+      <div data-painel="cashback" hidden>
+        <div class="cashback-faixa">
+          <strong><span id="cashback-percentual">5</span>% de cashback</strong>
+          <span>Toda compra gera desconto para a próxima.</span>
+        </div>
+        <div class="bloco cashback-saldo">
+          <small class="suave">Seu saldo neste aparelho</small>
+          <strong id="cashback-saldo"></strong>
+        </div>
+        <details class="sanfona" open>
+          <summary>Regras de uso</summary>
+          <ul class="regras">
+            <li>Todas as compras acumulam créditos.</li>
+            <li>O desconto vale na próxima compra.</li>
+            <li>Não pode ser usado junto com cupom.</li>
+          </ul>
+        </details>
+        <details class="sanfona">
+          <summary>Perguntas frequentes</summary>
+          <h4>Como uso meu cashback?</h4>
+          <p>Na sacola, marque a opção "Usar meu cashback". O saldo é descontado do total do pedido. Não é possível usar junto com cupom.</p>
+          <h4>Como o cashback é calculado?</h4>
+          <p>Você ganha o percentual acima sobre o valor pago em itens (já com o desconto do cupom, se houver) a cada pedido.</p>
+        </details>
+      </div>
+
+    </section>
+
+
+    <!-- ===== SOBRE A LOJA =====
+         Os horários, o endereço e o WhatsApp daqui são os que o site usa de verdade. -->
+    <section class="tela tela--loja" data-tela="loja" data-titulo="Sobre a loja" data-pai="/" hidden>
+
+      <div class="bloco loja-cab">
+        <!-- Logo: <img src="img/logo.png" alt="Logo"> dentro do div -->
+        <div class="loja-cab__logo foto"></div>
+        <div>
+          <h2>Sua Lanchonete</h2>
+          <p class="status"><i class="status__ponto"></i><span></span></p>
+        </div>
+      </div>
+
+      <!-- Horário: escreva "HH:MM às HH:MM" ou "Fechado". data-dia: 0 = domingo ... 6 = sábado.
+           Se fechar depois da meia-noite, escreva por exemplo "18:00 às 00:30". -->
+      <div class="bloco">
+        <h3 class="bloco__titulo">Horário de atendimento</h3>
+        <ul class="horarios">
+          <li data-dia="0"><span>Domingo</span><strong>17:00 às 23:00</strong></li>
+          <li data-dia="1"><span>Segunda</span><strong>Fechado</strong></li>
+          <li data-dia="2"><span>Terça</span><strong>18:00 às 23:00</strong></li>
+          <li data-dia="3"><span>Quarta</span><strong>18:00 às 23:00</strong></li>
+          <li data-dia="4"><span>Quinta</span><strong>18:00 às 23:00</strong></li>
+          <li data-dia="5"><span>Sexta</span><strong>18:00 às 00:30</strong></li>
+          <li data-dia="6"><span>Sábado</span><strong>17:00 às 00:30</strong></li>
+        </ul>
+      </div>
+
+      <!-- Só para mostrar ao cliente. As formas que valem de verdade estão em PAGAMENTO (tela finalizar). -->
+      <div class="bloco">
+        <h3 class="bloco__titulo">Formas de pagamento</h3>
+        <ul class="pagamentos">
+          <li>Pix</li>
+          <li>Dinheiro</li>
+          <li>Cartão de crédito ou débito</li>
+        </ul>
+      </div>
+
+      <div class="bloco">
+        <h3 class="bloco__titulo">Endereço</h3>
+        <p id="loja-endereco">Rua Exemplo, 123 - Centro, Sua Cidade - UF</p>
+        <a class="btn btn--contorno" id="loja-mapa" target="_blank" rel="noopener">
+          <svg class="icone"><use href="#i-local"/></svg> Abrir no mapa
+        </a>
+      </div>
+
+      <!-- WhatsApp que RECEBE os pedidos: no link, 55 + DDD + número, só dígitos -->
+      <div class="bloco">
+        <h3 class="bloco__titulo">WhatsApp</h3>
+        <a class="btn btn--contorno" id="loja-whatsapp" href="https://wa.me/5500900000000" target="_blank" rel="noopener">Chamar no WhatsApp</a>
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =====================================================================
+       OPÇÕES DOS PRODUTOS (escondido: o site copia daqui para a tela do produto)
+       Cada grupo é usado pelos produtos que citam o data-grupo dele em data-grupos.
+         data-min ... quantos itens o cliente PRECISA escolher (0 = opcional)
+         data-max ... máximo de itens (1 = escolha única, com bolinha)
+       O subtítulo ("Escolha até 6 itens") e a tag "Obrigatório" são texto livre:
+       se mudar min/max, ajuste o texto.
+       Preço da opção: "+ R$ 3,00" ou "Incluso".
+       ===================================================================== -->
+  <div id="grupos" hidden>
+
+    <!-- ----- Grupo: Turbine seu lanche ----- -->
+    <div class="bloco grupo" data-grupo="adicionais" data-min="0" data-max="6">
+      <header class="grupo__cab">
+        <div>
+          <h3 class="bloco__titulo">Turbine seu lanche</h3>
+          <p class="suave">Escolha até 6 itens</p>
+        </div>
+      </header>
+      <ul class="opcoes">
+      <li class="opcao" data-id="bacon">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Bacon</span>
+          <small class="suave opcao__preco">+ R$ 3,00</small>
+        </div>
+        <div class="opcao__controle"></div>
+      </li>
+      <li class="opcao" data-id="queijo">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Queijo extra</span>
+          <small class="suave opcao__preco">+ R$ 2,00</small>
+        </div>
+        <div class="opcao__controle"></div>
+      </li>
+      <li class="opcao" data-id="ovo">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Ovo</span>
+          <small class="suave opcao__preco">+ R$ 2,00</small>
+        </div>
+        <div class="opcao__controle"></div>
+      </li>
+      <li class="opcao" data-id="cheddar">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Cheddar</span>
+          <small class="suave opcao__preco">+ R$ 2,50</small>
+        </div>
+        <div class="opcao__controle"></div>
+      </li>
+      <li class="opcao" data-id="catupiry">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Catupiry</span>
+          <small class="suave opcao__preco">+ R$ 3,00</small>
+        </div>
+        <span class="tag tag--esgotado">Esgotado</span>
+        <div class="opcao__controle"></div>
+      </li>
+      <li class="opcao" data-id="burger">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Hambúrguer extra</span>
+          <small class="suave opcao__preco">+ R$ 7,00</small>
+        </div>
+        <div class="opcao__controle"></div>
+      </li>
+      </ul>
+    </div>
+
+    <!-- ----- Grupo: Escolha a bebida ----- -->
+    <div class="bloco grupo" data-grupo="bebidaCombo" data-min="1" data-max="1">
+      <header class="grupo__cab">
+        <div>
+          <h3 class="bloco__titulo">Escolha a bebida</h3>
+          <p class="suave">Escolha 1 opção</p>
+        </div>
+        <span class="tag tag--obrigatorio">Obrigatório</span>
+      </header>
+      <ul class="opcoes">
+      <li class="opcao" data-id="refri">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Refrigerante lata</span>
+          <small class="suave opcao__preco">Incluso</small>
+        </div>
+        <div class="opcao__controle"></div>
+      </li>
+      <li class="opcao" data-id="guara">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Guaraná lata</span>
+          <small class="suave opcao__preco">Incluso</small>
+        </div>
+        <div class="opcao__controle"></div>
+      </li>
+      <li class="opcao" data-id="suco">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Suco de caixinha</span>
+          <small class="suave opcao__preco">Incluso</small>
+        </div>
+        <div class="opcao__controle"></div>
+      </li>
+      </ul>
+    </div>
+
+    <!-- ----- Grupo: Molhos extras ----- -->
+    <div class="bloco grupo" data-grupo="molhos" data-min="0" data-max="3">
+      <header class="grupo__cab">
+        <div>
+          <h3 class="bloco__titulo">Molhos extras</h3>
+          <p class="suave">Escolha até 3 itens</p>
+        </div>
+      </header>
+      <ul class="opcoes">
+      <li class="opcao" data-id="maionese">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Maionese temperada</span>
+          <small class="suave opcao__preco">+ R$ 1,50</small>
+        </div>
+        <div class="opcao__controle"></div>
+      </li>
+      <li class="opcao" data-id="barbecue">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Barbecue</span>
+          <small class="suave opcao__preco">+ R$ 1,50</small>
+        </div>
+        <div class="opcao__controle"></div>
+      </li>
+      <li class="opcao" data-id="picante">
+        <div class="foto foto--mini"></div>
+        <div class="opcao__texto">
+          <span class="opcao__nome">Molho picante</span>
+          <small class="suave opcao__preco">+ R$ 1,50</small>
+        </div>
+        <div class="opcao__controle"></div>
+      </li>
+      </ul>
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================================
+       PEÇAS QUE O SITE REPETE (modelos copiados pelo JS)
+       Mexa só se quiser mudar o desenho de uma dessas peças.
+       ===================================================================== -->
+
+  <!-- Contador - 1 + (opções e sacola) -->
+  <template id="tpl-contador">
+    <div class="contador">
+      <button type="button" class="contador__btn" data-acao="menos" aria-label="Diminuir">
+        <svg class="icone"><use href="#i-menos"/></svg>
+      </button>
+      <span class="contador__qtd">1</span>
+      <button type="button" class="contador__btn" data-acao="mais" aria-label="Aumentar">
+        <svg class="icone"><use href="#i-mais"/></svg>
+      </button>
+    </div>
+  </template>
+
+  <!-- Card do carrossel "Os mais pedidos" -->
+  <template id="tpl-destaque">
+    <article class="card-destaque">
+      <a class="card-destaque__link">
+        <div class="foto card-destaque__foto"></div>
+        <span class="card-destaque__nome"></span>
+        <strong class="card-destaque__preco"></strong>
+      </a>
+      <button type="button" class="card-destaque__mais" aria-label="Adicionar">
+        <svg class="icone"><use href="#i-mais"/></svg>
+      </button>
+    </article>
+  </template>
+
+  <!-- Item dentro da sacola -->
+  <template id="tpl-sacola-item">
+    <li class="sacola-item">
+      <div class="foto foto--mini"></div>
+      <div class="sacola-item__texto">
+        <strong class="sacola-item__nome"></strong>
+        <small class="suave sacola-item__opcoes"></small>
+        <small class="suave sacola-item__obs"></small>
+        <span class="sacola-item__preco"></span>
+      </div>
+      <div class="sacola-item__acoes">
+        <div class="sacola-item__contador"></div>
+        <button type="button" class="icone-btn icone-btn--pequeno" data-acao="remover" aria-label="Remover item">
+          <svg class="icone"><use href="#i-lixo"/></svg>
+        </button>
+      </div>
+    </li>
+  </template>
+
+  <!-- Cartão de pedido (tela Meus pedidos) -->
+  <template id="tpl-pedido">
+    <li class="pedido">
+      <details>
+        <summary>
+          <span class="pedido__cab">
+            <strong class="pedido__numero"></strong>
+            <small class="suave pedido__data"></small>
+          </span>
+          <span class="pedido__fim">
+            <span class="tag pedido__tipo"></span>
+            <strong class="pedido__total"></strong>
+          </span>
+        </summary>
+        <pre class="pedido__detalhe"></pre>
+        <a class="btn btn--contorno btn--bloco pedido__reenviar" target="_blank" rel="noopener">Reenviar no WhatsApp</a>
+      </details>
+    </li>
+  </template>
+
+
+  <script src="app.js"></script>
+</body>
+</html>
