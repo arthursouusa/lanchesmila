@@ -412,7 +412,18 @@ const MENU_DA_ROTA = {
 };
 const ROTAS_SEM_BARRA_SACOLA = ["sacola", "identificar", "finalizar", "sucesso", "produto"];
 
-// Atualiza contadores do menu e a barra flutuante "Ver sacola"
+// Leva o cliente até as categorias, mesmo quando ele está em outra tela.
+function irAoCardapio() {
+  const rolar = () => $("#cardapio")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (rotaAtual === "inicio") {
+    rolar();
+    return;
+  }
+  window.addEventListener("hashchange", rolar, { once: true });
+  location.hash = "#/";
+}
+
+// Atualiza contadores e alterna o botão flutuante entre cardápio e sacola.
 function atualizarMarcadores() {
   const qtd = qtdCarrinho();
   const badgeSacola = $("#badge-sacola");
@@ -424,9 +435,15 @@ function atualizarMarcadores() {
   badgePromos.textContent = cupons;
   badgePromos.hidden = cupons === 0;
 
-  $("#barra-sacola").hidden = qtd === 0 || ROTAS_SEM_BARRA_SACOLA.includes(rotaAtual);
+  const barra = $("#barra-sacola");
+  const mostrarBarra = !ROTAS_SEM_BARRA_SACOLA.includes(rotaAtual);
+  barra.hidden = !mostrarBarra;
+  $("#barra-sacola-texto").textContent = qtd > 0 ? "Ver sacola" : "Faça seu pedido";
+  $("#barra-sacola-resumo").hidden = qtd === 0;
   $("#barra-sacola-qtd").textContent = qtd;
   $("#barra-sacola-total").textContent = dinheiro(subtotalCarrinho());
+  barra.setAttribute("aria-label", qtd > 0 ? `Ver sacola, ${qtd} ${qtd === 1 ? "item" : "itens"}, total ${dinheiro(subtotalCarrinho())}` : "Faça seu pedido: ir ao cardápio");
+  document.body.classList.toggle("cta-flutuante-ativo", mostrarBarra);
 }
 
 function mostrarTela(manterRolagem = false) {
@@ -951,6 +968,12 @@ function enviarPedido(t, formaNome, pedeTroco, troco, recado) {
    10. LIGANDO OS BOTÕES (roda uma vez, quando a página abre)
    ===================================================================== */
 function ligarEventos() {
+  // botão flutuante: com itens abre a sacola; sem itens leva às categorias
+  $("#barra-sacola").onclick = () => {
+    if (qtdCarrinho() > 0) location.hash = "#/sacola";
+    else irAoCardapio();
+  };
+
   // topo e tela inicial
   $("#topo-voltar").onclick = voltar;
   $("#topo-compartilhar").onclick = () => compartilhar(topo.compartilhar);

@@ -12,8 +12,8 @@
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap">
   -->
   <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="fonts.css">
 </head>
-
 <!--
   =====================================================================
   COMO O SITE É DIVIDIDO
@@ -84,12 +84,14 @@
     </div>
   </header>
 
-  <!-- Barra flutuante "Ver sacola" (aparece quando há itens) -->
-  <a id="barra-sacola" class="barra-sacola" href="#/sacola" hidden>
-    <span class="barra-sacola__qtd" id="barra-sacola-qtd">0</span>
-    <span class="barra-sacola__texto">Ver sacola</span>
-    <strong id="barra-sacola-total">R$ 0,00</strong>
-  </a>
+  <!-- Botão flutuante: leva ao cardápio ou abre a sacola quando já há itens -->
+  <button type="button" id="barra-sacola" class="barra-sacola" aria-label="Faça seu pedido" hidden>
+    <span class="barra-sacola__texto" id="barra-sacola-texto">Faça seu pedido</span>
+    <span class="barra-sacola__resumo" id="barra-sacola-resumo" hidden>
+      <span class="barra-sacola__qtd" id="barra-sacola-qtd">0</span>
+      <strong id="barra-sacola-total">R$ 0,00</strong>
+    </span>
+  </button>
 
   <!-- Menu de baixo -->
   <nav class="menu" aria-label="Menu principal">
@@ -189,7 +191,7 @@
       <!-- ===== CATEGORIAS =====
            O nome do quadro é o título da tela da categoria.
            O id depois de #/categoria/ tem que ser igual ao data-id da tela (em PRODUTOS). -->
-      <section>
+      <section id="cardapio">
         <h2 class="titulo-secao">Cardápio</h2>
         <div class="grade-categorias">
         <a class="quadro" href="#/categoria/burgers">
